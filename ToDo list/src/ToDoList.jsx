@@ -7,20 +7,46 @@ import { MdDeleteForever, MdEdit } from "react-icons/md"
 function ToDoList() {
   let [todo, setTodo] = useState([]);
 
-  let handelAddTodo = (e) => {
-    e.preventDefault();
-    setTodo([...todo, "New Todo"]);
-    setText("");
-  }
 
-  const [text, setText] = useState("")
-
-  const newTodo = {
+  const [newtodo, setNewTodo] = useState({
     id: Date.now(),
     text: "",
     completed: false,
+    isUpdating: false,
+  });
+
+  const handleAddTodo = (e) => {
+  setTodo([...todo,newtodo]);
+  setNewTodo({
+    id: Date.now(),
+    text: "",
+    completed: false,
+    isUpdating: false,
+  });
+  }
+  let handelAddTodo = (e) => {
+    e.preventDefault();
+    setTodo([...todo, "New Todo"]);
+    setNewTodo({
+      id: Date.now(),
+      text: "",
+      completed: true,
+    });
+  }
+  const handleDeleteTodo = (id) => {
+    const updatedTodos = todo.filter((text) => text.id !== id);
+    setTodo(updatedTodos);
   }
 
+  const handelEditTodo = (id) => setTodo((prevState) => {
+    const updatedTodos = prevState.map((todoItem) => {
+      if (todoItem.id === id) {
+        return { ...todoItem, isUpdating : true };
+      }
+      return todoItem;
+    });
+    return updatedTodos;
+  })
 
   return (
     <section>
@@ -44,10 +70,10 @@ function ToDoList() {
           border border-green-500 rounded-lg overflow-hidden md-4'>
             <input
               className='flex-1 p-2 outline-none'
-              value={text}
+              value={newtodo.text}
               type="text"
               placeholder='Type new To-Do'
-              onChange={(e) => setText(e.target.value)} />
+              onChange={(e) => setNewTodo({ ...newtodo, text: e.target.value })} />
 
             <button
 
@@ -60,9 +86,9 @@ function ToDoList() {
           </form>
 
           <ul className='space-y-2' >
-            {todo.map((todo) => {
+            {todo.map((text, index) => {
               return (
-                <li className="flex 
+                <li key={text.id} className="flex 
               justify-between 
               items-center
                bg-white p-2 
@@ -72,16 +98,33 @@ function ToDoList() {
                   <div className="iniput flex items-center space-x-2 ">
                     <input className='w-5 h-5
                        accent-green-500'
-                      type="checkbox" />
-                    <p className='text-gray-400'>
-                      {todo}
-                    </p>
+                      type="checkbox"
+                      checked={text.completed}
+
+                      onChange={(e) => setTodo((prevState) => {
+                        const updatedTodos = prev.map((todoItem) => {
+                          if (todoItem.id === text.id) {
+                            return { ...todoItem, complited: e.target.checked };
+                          }
+                          return todoItem;
+                        });
+                        return updatedTodos;
+                      })}
+                    />
+                    {text.isUpdating
+                      ?
+                      <input type="text" />
+                      :
+                      <p className={`${text.completed && line - through} text-gray-400`}>
+                        {index + 1} {text.text}
+                      </p>
+                    }
                     <div className="flex items-center justify-between">
                     </div>
                   </div>
                   <div className="flex gap-2 ju">
-                    <span className="text-blue-500 text-2xl"> <MdEdit /> </span>
-                    <span className="text-red-500 text-2xl <MdDeleteForever />"><MdDeleteForever /></span>
+                    <span className="text-blue-500 text-2xl" onClick={() => handelEditTodo(text.id)} > <MdEdit /> </span>
+                    <span className="text-red-500 text-2xl <MdDeleteForever />" title={text.id} onClick={(e) => handleDeleteTodo(text.id)}><MdDeleteForever /></span>
                   </div>
                 </li>
               )
